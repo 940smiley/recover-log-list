@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+python-multipart
+rembg
+opencv-python-headless
+pillow
+ultralytics
+numpy
+requests

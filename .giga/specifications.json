@@ -1,0 +1,18 @@
+[
+  {
+    "fileName": "main-overview.mdc",
+    "description": "Complete system overview covering the AI-powered collectibles processing pipeline, core components, and architectural relationships"
+  },
+  {
+    "fileName": "ai-detection-pipeline.mdc",
+    "description": "Detailed documentation of the AI detection workflow, including YOLOv8 integration, object detection algorithms, and image processing stages"
+  },
+  {
+    "fileName": "data-flow-architecture.mdc",
+    "description": "Comprehensive documentation of data flow between components, from initial item import through AI processing to final categorization and storage"
+  },
+  {
+    "fileName": "training-system.mdc",
+    "description": "Technical specification of the custom training pipeline, model management, and progress tracking for collectible detection models"
+  }
+]

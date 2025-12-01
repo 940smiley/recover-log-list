@@ -1,0 +1,9 @@
+*.pyc
+__pycache__/
+.venv/
+*.db
+*.log
+.DS_Store
+.env
+yolov8n.pt
+*.pt
