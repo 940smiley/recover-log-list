@@ -178,23 +178,47 @@ export default function TrainingPage() {
                     <div className="mb-6">
                         <div className="flex justify-between mb-2">
                             <span className="font-medium">Status:</span>
-                            <span className={`font-bold ${status?.status === 'training' ? 'text-blue-600' :
-                                status?.status === 'completed' ? 'text-green-600' :
-                                    status?.status === 'error' ? 'text-red-600' : 'text-gray-600'
-                                }`}>
-                                {status?.status?.toUpperCase() || 'IDLE'}
+                            <span className={`font-bold ${status?.is_training ? 'text-blue-600' : 'text-gray-600'}`}>
+                                {status?.is_training ? 'TRAINING' : 'IDLE'}
                             </span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                            <div
-                                className="bg-blue-600 h-4 rounded-full transition-all duration-500"
-                                style={{ width: `${status?.progress || 0}%` }}
-                            ></div>
-                        </div>
-                        <div className="flex justify-between mt-1 text-sm text-gray-600">
-                            <span>Epoch: {status?.current_epoch || 0} / {status?.total_epochs || 0}</span>
-                            <span>{Math.round(status?.progress || 0)}%</span>
-                        </div>
+                        
+                        {status?.is_training && (
+                            <div className="space-y-2">
+                                <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                                    <div
+                                        className={`h-4 rounded-full transition-all duration-500 ${
+                                            status?.status === 'completed' ? 'bg-green-600' :
+                                            status?.status === 'error' ? 'bg-red-600' : 'bg-blue-600'
+                                        }`}
+                                        style={{ width: `${status?.progress || 0}%` }}
+                                    ></div>
+                                </div>
+                                <div className="flex justify-between text-sm text-gray-600">
+                                    <span>Epoch: {status?.current_epoch || 0} / {status?.total_epochs || 0}</span>
+                                    <span>{Math.round(status?.progress || 0)}%</span>
+                                </div>
+                                
+                                {status?.metrics && Object.keys(status.metrics).length > 0 && (
+                                    <div className="grid grid-cols-3 gap-2 mt-3">
+                                        {Object.entries(status.metrics).map(([key, value]) => (
+                                            <div key={key} className="text-center p-2 bg-gray-50 rounded">
+                                                <div className="text-xs text-gray-500 uppercase">{key}</div>
+                                                <div className="font-bold text-sm">{
+                                                    typeof value === 'number' ? value.toFixed(3) : value
+                                                }</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                
+                                {status?.time_remaining && (
+                                    <div className="text-sm text-gray-600 text-center">
+                                        Estimated time remaining: {status.time_remaining}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex-1 bg-gray-900 text-green-400 p-4 rounded font-mono text-sm overflow-y-auto">
@@ -212,7 +236,15 @@ export default function TrainingPage() {
 
             {/* Available Models */}
             <div className="mt-6 bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-4">Custom Models</h2>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold">Custom Models</h2>
+                    <button
+                        onClick={fetchModels}
+                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm"
+                    >
+                        Refresh
+                    </button>
+                </div>
                 {models.length === 0 ? (
                     <p className="text-gray-500">No custom models found yet.</p>
                 ) : (

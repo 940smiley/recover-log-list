@@ -25,13 +25,35 @@ export default function DatasetPage() {
     const [startPos, setStartPos] = useState({ x: 0, y: 0 });
     const [currentBox, setCurrentBox] = useState<BoundingBox | null>(null);
     const [localPath, setLocalPath] = useState('');
+    const [sourceType, setSourceType] = useState<'local' | 'cloud'>('local');
+    const [cloudRemotes, setCloudRemotes] = useState<any[]>([]);
+    const [selectedRemote, setSelectedRemote] = useState('');
+    const [cloudPath, setCloudPath] = useState('');
+    const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
+    const [tagConfidences, setTagConfidences] = useState<{ [key: string]: number }>({});
+    const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
 
+    const loadCloudRemotes = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/cloud/remotes');
+            const data = await response.json();
+            setCloudRemotes(data);
+        } catch (error) {
+            console.error('Error loading cloud remotes:', error);
+        }
+    };
+
     const loadImages = async () => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/files/list?path=${encodeURIComponent(localPath)}`);
+            let response;
+            if (sourceType === 'local') {
+                response = await fetch(`http://localhost:8000/files/list?path=${encodeURIComponent(localPath)}`);
+            } else {
+                response = await fetch(`http://localhost:8000/cloud/files?remote=${selectedRemote}&path=${encodeURIComponent(cloudPath)}`);
+            }
             const data = await response.json();
             const imageFiles = data
                 .filter((f: any) => !f.is_dir && /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name))
@@ -41,6 +63,79 @@ export default function DatasetPage() {
         } catch (error) {
             console.error('Error loading images:', error);
             alert('Error loading images from directory');
+        }
+    };
+
+    const loadAISuggestions = async () => {
+        if (images.length === 0 || currentIndex < 0) return;
+        
+        setIsLoadingSuggestions(true);
+        try {
+            // Fetch the image file
+            const imagePath = images[currentIndex];
+            const imageUrl = sourceType === 'local' 
+                ? `http://localhost:8000/files/serve?path=${encodeURIComponent(imagePath)}`
+                : `http://localhost:8000/cloud/serve?remote=${selectedRemote}&path=${encodeURIComponent(imagePath)}`;
+            
+            const imageResponse = await fetch(imageUrl);
+            if (!imageResponse.ok) {
+                throw new Error(`Failed to load image: ${imageResponse.statusText}`);
+            }
+            const imageBlob = await imageResponse.blob();
+            
+            // Send to AI detection
+            const formData = new FormData();
+            formData.append('file', imageBlob);
+            
+            const aiResponse = await fetch('http://localhost:8000/ai/detect', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!aiResponse.ok) {
+                throw new Error(`AI detection failed: ${aiResponse.statusText}`);
+            }
+            
+            const detections = await aiResponse.json();
+            if (!Array.isArray(detections) || detections.length === 0) {
+                // If no objects detected, return a helpful message
+                setSuggestedTags([]);
+                return;
+            }
+            
+            // Group detections by label and count confidence
+            const labelGroups: { [key: string]: number[] } = {};
+            detections.forEach((d: any) => {
+                if (!labelGroups[d.label]) {
+                    labelGroups[d.label] = [];
+                }
+                labelGroups[d.label].push(d.confidence || 0);
+            });
+            
+            // Sort by average confidence
+            const tagsWithConfidence = Object.entries(labelGroups)
+                .map(([label, confidences]) => ({
+                    label,
+                    confidence: confidences.reduce((a, b) => a + b, 0) / confidences.length
+                }))
+                .sort((a, b) => b.confidence - a.confidence);
+            
+            
+            // Store confidence scores
+            const confidenceMap: { [key: string]: number } = {};
+            tagsWithConfidence.forEach(item => {
+                confidenceMap[item.label] = item.confidence;
+            });
+            
+            setSuggestedTags(tagsWithConfidence.map(item => item.label));
+            setTagConfidences(confidenceMap);
+        } catch (error) {
+            console.error('Error loading AI suggestions:', error);
+            setSuggestedTags([]);
+            // Re-throw to let the UI know there was an error
+            throw error;
+        } finally {
+            setIsLoadingSuggestions(false);
         }
     };
 
@@ -213,13 +308,50 @@ export default function DatasetPage() {
                     <div>
                         <h2 className="text-xl font-semibold mb-4">Load Images</h2>
                         <div className="space-y-2">
-                            <input
-                                type="text"
-                                value={localPath}
-                                onChange={(e) => setLocalPath(e.target.value)}
-                                placeholder="Directory path (e.g., C:\\Images)"
-                                className="w-full px-4 py-2 border rounded"
-                            />
+                            <div className="flex gap-2 mb-2">
+                                <button
+                                    onClick={() => setSourceType('local')}
+                                    className={`flex-1 px-3 py-2 rounded ${sourceType === 'local' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                                >
+                                    Local Files
+                                </button>
+                                <button
+                                    onClick={() => { setSourceType('cloud'); loadCloudRemotes(); }}
+                                    className={`flex-1 px-3 py-2 rounded ${sourceType === 'cloud' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                                >
+                                    Cloud Storage
+                                </button>
+                            </div>
+                            
+                            {sourceType === 'local' ? (
+                                <input
+                                    type="text"
+                                    value={localPath}
+                                    onChange={(e) => setLocalPath(e.target.value)}
+                                    placeholder="Directory path (e.g., C:\\Images)"
+                                    className="w-full px-4 py-2 border rounded"
+                                />
+                            ) : (
+                                <>
+                                    <select
+                                        value={selectedRemote}
+                                        onChange={(e) => setSelectedRemote(e.target.value)}
+                                        className="w-full px-4 py-2 border rounded"
+                                    >
+                                        <option value="">Select Cloud Storage</option>
+                                        {cloudRemotes.map((remote: any) => (
+                                            <option key={remote.name} value={remote.name}>{remote.name} ({remote.type})</option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        type="text"
+                                        value={cloudPath}
+                                        onChange={(e) => setCloudPath(e.target.value)}
+                                        placeholder="Path (e.g., /Photos)"
+                                        className="w-full px-4 py-2 border rounded"
+                                    />
+                                </>
+                            )}
                             <button
                                 onClick={loadImages}
                                 className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -243,6 +375,56 @@ export default function DatasetPage() {
                             <p className="text-xs text-gray-500">
                                 Enter label, then click and drag on image to draw bounding box
                             </p>
+                            
+                            <button
+                                onClick={loadAISuggestions}
+                                disabled={images.length === 0 || isLoadingSuggestions}
+                                className="w-full px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:bg-gray-400 text-sm"
+                            >
+                                {isLoadingSuggestions ? 'Loading...' : '🤖 Get AI Suggestions'}
+                            </button>
+                            
+                            {suggestedTags.length > 0 && (
+                                <div className="border rounded p-2">
+                                    <p className="text-xs font-medium mb-1">Suggested Tags:</p>
+                                    <div className="flex flex-wrap gap-1">
+                                        {suggestedTags.map((tag, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => setCurrentLabel(tag)}
+                                                className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded hover:bg-green-200 flex items-center gap-1"
+                                                title={`Confidence: ${(tagConfidences[tag] || 0).toFixed(2)}`}
+                                            >
+                                                {tag}
+                                                <span className="text-xs text-green-600">
+                                                    ({(tagConfidences[tag] || 0).toFixed(2)})
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="mt-2 flex gap-2">
+                                        <button
+                                            onClick={() => {
+                                                // Apply all suggested tags as labels
+                                                const label = suggestedTags.join(', ');
+                                                setCurrentLabel(label);
+                                            }}
+                                            className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
+                                        >
+                                            Apply All
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setSuggestedTags([]);
+                                                setTagConfidences({});
+                                            }}
+                                            className="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded hover:bg-gray-200"
+                                        >
+                                            Clear
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -304,7 +486,10 @@ export default function DatasetPage() {
                         <div className="relative border-2 border-gray-300 rounded overflow-hidden">
                             <img
                                 ref={imageRef}
-                                src={`http://127.0.0.1:8000/files/serve?path=${encodeURIComponent(images[currentIndex])}`}
+                                src={sourceType === 'local' 
+                                    ? `http://127.0.0.1:8000/files/serve?path=${encodeURIComponent(images[currentIndex])}`
+                                    : `http://127.0.0.1:8000/cloud/serve?remote=${selectedRemote}&path=${encodeURIComponent(images[currentIndex])}`
+                                }
                                 alt="Annotation target"
                                 onLoad={drawCanvas}
                                 className="hidden"

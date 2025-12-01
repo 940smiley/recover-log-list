@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from database import create_db_and_tables
-from routers import files, cloud, ai, items, image, categories, stats, training
+from routers import files, cloud, ai, items, image, categories, stats, training, settings
 import os
 
 app = FastAPI(title="Collectibles Log Book API")
@@ -38,6 +38,7 @@ app.include_router(image.router)
 app.include_router(categories.router)
 app.include_router(stats.router)
 app.include_router(training.router)
+app.include_router(settings.router)
 
 @app.get("/")
 def read_root():
