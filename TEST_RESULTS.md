@@ -1,5 +1,13 @@
 # Test Results - Collectibles Log Book Application
 
+## 2025-12-06
+- **Command**: `npm run lint` (frontend) — ❌ failed because `npm` is unavailable in the execution environment.
+- **Impact**: Lint suite could not be executed; functionality changes were implemented without automated lint verification. Manual review required until environment supplies Node.js/npm.
+
+---
+
+# Test Results - Collectibles Log Book Application
+
 **Test Date**: 2025-11-30  
 **Test Directory**: `I:\C&D PHOTOS\phil`  
 **Total Images Processed**: 24 images
