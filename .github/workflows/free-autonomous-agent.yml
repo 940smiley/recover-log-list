@@ -1,0 +1,329 @@
+name: Free Autonomous AI Dev Agent (Offline LLM)
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  ai_dev_agent:
+    runs-on: ubuntu-latest
+
+    # Only run if PR has label "ai-autofix"
+    if: contains(toJson(github.event.pull_request.labels), 'ai-autofix')
+
+    outputs:
+      patch_applied: ${{ steps.apply_patch.outcome }}
+
+    steps:
+      - name: Check out PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      # ---------------------------------------------------------
+      # Optional: Baseline tests BEFORE AI changes (non-blocking)
+      # ---------------------------------------------------------
+      - name: Detect and run baseline tests (non-blocking)
+        continue-on-error: true
+        run: |
+          echo "Detecting test command (baseline)..."
+          TEST_COMMAND=""
+
+          if [ -f "package.json" ]; then
+            TEST_COMMAND="npm test"
+          elif [ -f "pyproject.toml" ] || [ -f "requirements.txt" ]; then
+            if python3 -m pytest --version >/dev/null 2>&1; then
+              TEST_COMMAND="python3 -m pytest"
+            fi
+          elif [ -f "go.mod" ]; then
+            TEST_COMMAND="go test ./..."
+          fi
+
+          if [ -z "$TEST_COMMAND" ]; then
+            echo "No test command detected. Skipping baseline tests."
+            exit 0
+          fi
+
+          echo "Running baseline tests: $TEST_COMMAND"
+          $TEST_COMMAND
+
+      # ---------------------------------------------------------
+      # Install llama.cpp (CPU-only, free, no API keys)
+      # ---------------------------------------------------------
+      - name: Install llama.cpp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake wget
+          git clone https://github.com/ggerganov/llama.cpp.git
+          cd llama.cpp
+          make -j4
+
+      # ---------------------------------------------------------
+      # Download primary + fallback coder models (free)
+      # ---------------------------------------------------------
+      - name: Download GGUF models
+        run: |
+          mkdir -p models
+          echo "Downloading primary model: Qwen2.5-Coder-1.5B-Instruct q4_0..."
+          wget -O models/qwen.gguf \
+            https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-1.5b-instruct-q4_0.gguf
+
+          echo "Downloading fallback model: TinyLlama-1.1B q4_0..."
+          wget -O models/tinyllama.gguf \
+            https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_0.gguf
+
+      # ---------------------------------------------------------
+      # Extract PR diff for model context
+      # ---------------------------------------------------------
+      - name: Generate PR diff file
+        id: diff
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+          git diff origin/${{ github.event.pull_request.base.ref }} > pr.diff
+          echo "PR diff generated:"
+          head -n 50 pr.diff || true
+
+      # ---------------------------------------------------------
+      # Run primary model to generate patch
+      # ---------------------------------------------------------
+      - name: Run primary offline LLM (Qwen) to generate patch
+        id: primary_llm
+        run: |
+          cat << 'EOF' > prompt.txt
+You are an autonomous code assistant running fully offline.
+
+You are given a git diff of changes in a pull request.
+Your job:
+
+1. Analyze the diff.
+2. Identify bugs, style issues, or improvements.
+3. Output ONLY a unified diff patch that can be applied with `git apply`.
+
+STRICT RULES:
+- Only output a valid patch starting with lines like: diff --git a/... b/...
+- Do NOT output explanations or commentary.
+- Do NOT wrap the patch in markdown or code fences.
+- Use correct file paths as shown in the original diff.
+- If no changes are needed, output an empty patch (i.e. output nothing).
+
+EOF
+
+          echo "==== Prompt Preview ===="
+          head -n 40 prompt.txt || true
+          echo "========================"
+
+          full_input="$(cat prompt.txt)
+
+=== BEGIN ORIGINAL DIFF ===
+$(cat pr.diff)
+=== END ORIGINAL DIFF ===
+"
+
+          echo "$full_input" > llm_input_primary.txt
+
+          ./llama.cpp/llama-cli \
+            -m models/qwen.gguf \
+            --temp 0.2 \
+            -c 4096 \
+            -p "$(cat llm_input_primary.txt)" \
+            > llm_raw_output_primary.txt
+
+          echo "Primary model output (truncated):"
+          head -n 80 llm_raw_output_primary.txt || true
+
+      # ---------------------------------------------------------
+      # Try applying primary patch
+      # ---------------------------------------------------------
+      - name: Apply patch from primary model
+        id: apply_primary
+        continue-on-error: true
+        run: |
+          echo "Extracting patch from primary output..."
+          # Extract lines starting at 'diff --git' to the end
+          grep -n '^diff --git' llm_raw_output_primary.txt || true
+          sed -n '/^diff --git/,$p' llm_raw_output_primary.txt > ai_primary.patch || true
+
+          if [ ! -s ai_primary.patch ]; then
+            echo "No patch detected in primary output."
+            exit 1
+          fi
+
+          echo "Attempting to apply primary patch..."
+          git apply ai_primary.patch
+
+      # ---------------------------------------------------------
+      # If primary fails, use fallback model
+      # ---------------------------------------------------------
+      - name: Run fallback model (TinyLlama) if primary failed
+        id: fallback_llm
+        if: steps.apply_primary.outcome == 'failure'
+        run: |
+          echo "Primary patch apply FAILED. Running fallback model..."
+
+          full_input="$(cat prompt.txt)
+
+=== BEGIN ORIGINAL DIFF ===
+$(cat pr.diff)
+=== END ORIGINAL DIFF ===
+"
+
+          echo "$full_input" > llm_input_fallback.txt
+
+          ./llama.cpp/llama-cli \
+            -m models/tinyllama.gguf \
+            --temp 0.25 \
+            -c 2048 \
+            -p "$(cat llm_input_fallback.txt)" \
+            > llm_raw_output_fallback.txt
+
+          echo "Fallback model output (truncated):"
+          head -n 80 llm_raw_output_fallback.txt || true
+
+          echo "Extracting patch from fallback output..."
+          sed -n '/^diff --git/,$p' llm_raw_output_fallback.txt > ai_fallback.patch || true
+
+          if [ ! -s ai_fallback.patch ]; then
+            echo "No patch detected in fallback output."
+            exit 1
+          fi
+
+          echo "Attempting to apply fallback patch..."
+          git apply ai_fallback.patch
+
+      # ---------------------------------------------------------
+      # Decide overall patch application result
+      # ---------------------------------------------------------
+      - name: Final patch application outcome
+        id: apply_patch
+        run: |
+          if [ "${{ steps.apply_primary.outcome }}" = "success" ]; then
+            echo "Patch applied from PRIMARY model."
+          elif [ "${{ steps.fallback_llm.outcome }}" = "success" ]; then
+            echo "Patch applied from FALLBACK model."
+          else
+            echo "No patch successfully applied."
+            # Do NOT fail the job; just skip commit later.
+          fi
+
+      # ---------------------------------------------------------
+      # Commit & push changes if any
+      # ---------------------------------------------------------
+      - name: Commit and push AI changes
+        run: |
+          git config user.name "Offline-AI-Agent"
+          git config user.email "offline-agent@local"
+
+          git status
+
+          git add .
+
+          if ! git diff --cached --quiet; then
+            git commit -m "AI: Offline autonomous fixes applied"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+
+      # ---------------------------------------------------------
+      # Leave PR comment summarizing model output
+      # ---------------------------------------------------------
+      - name: Prepare summary snippet
+        id: summary
+        run: |
+          # Prefer primary output; fallback if primary not used or empty
+          if [ -f llm_raw_output_primary.txt ]; then
+            head -n 120 llm_raw_output_primary.txt > summary.txt
+          elif [ -f llm_raw_output_fallback.txt ]; then
+            head -n 120 llm_raw_output_fallback.txt > summary.txt
+          else
+            echo "No model output captured." > summary.txt
+          fi
+
+      - name: Comment on PR with AI summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const body = fs.readFileSync("summary.txt", "utf8");
+
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: "### 🤖 Offline AI Agent\n" +
+                    "This PR was processed by the offline AI dev agent.\n\n" +
+                    "**Summary of model output (truncated):**\n" +
+                    "```text\n" + body + "\n```"
+            })
+
+  # -------------------------------------------------------------
+  # Post-patch tests job (runs after AI agent)
+  # -------------------------------------------------------------
+  tests:
+    runs-on: ubuntu-latest
+    needs: ai_dev_agent
+
+    # Only run if AI job actually ran (label present)
+    if: needs.ai_dev_agent.result == 'success'
+
+    outputs:
+      tests_passed: ${{ steps.run_tests.outcome }}
+
+    steps:
+      - name: Check out PR branch (latest with AI changes)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Detect and run tests (post-AI)
+        id: run_tests
+        run: |
+          echo "Detecting test command (post-AI)..."
+          TEST_COMMAND=""
+
+          if [ -f "package.json" ]; then
+            TEST_COMMAND="npm test"
+          elif [ -f "pyproject.toml" ] || [ -f "requirements.txt" ]; then
+            if python3 -m pytest --version >/dev/null 2>&1; then
+              TEST_COMMAND="python3 -m pytest"
+            fi
+          elif [ -f "go.mod" ]; then
+            TEST_COMMAND="go test ./..."
+          fi
+
+          if [ -z "$TEST_COMMAND" ]; then
+            echo "No test command detected. Skipping tests."
+            exit 0
+          fi
+
+          echo "Running tests: $TEST_COMMAND"
+          $TEST_COMMAND
+
+  # -------------------------------------------------------------
+  # Auto-merge job (only if tests pass + label 'ai-automerge')
+  # -------------------------------------------------------------
+  auto_merge:
+    runs-on: ubuntu-latest
+    needs: tests
+    if: |
+      needs.tests.result == 'success' &&
+      contains(toJson(github.event.pull_request.labels), 'ai-automerge')
+
+    steps:
+      - name: Auto-merge PR (squash)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              merge_method: "squash"
+            })
