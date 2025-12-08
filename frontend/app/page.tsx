@@ -34,7 +34,7 @@ export default function DashboardPage() {
     const fetchStats = async () => {
         setError(null);
         try {
-            const response = await fetch('http://localhost:8000/stats/');
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/stats/`);
             if (!response.ok) {
                 throw new Error('Unable to load dashboard data');
             }
