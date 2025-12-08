@@ -143,7 +143,7 @@ export default function DashboardPage() {
                         </div>
                         {hasItems ? (
                             <div className="space-y-3">
-                                {stats!.recent_items.map((item) => (
+                                {stats?.recent_items?.map((item) => (
                                     <Link
                                         key={item.id}
                                         href={`/items/${item.id}`}
