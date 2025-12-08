@@ -190,7 +190,7 @@ export default function DashboardPage() {
                                         <div className="h-2.5 rounded-full bg-slate-800 overflow-hidden">
                                             <div
                                                 className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500"
-                                                style={{ width: `${Math.min(cat.count, 100)}%` }}
+                                                style={{ width: `${(cat.count / Math.max(...(stats?.category_stats?.map(c => c.count) || [1]))) * 100}%` }}
                                             />
                                         </div>
                                     </div>
