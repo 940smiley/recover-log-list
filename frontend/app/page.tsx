@@ -92,17 +92,33 @@ export default function DashboardPage() {
                 <div className="bg-white rounded-lg shadow p-6">
                     <h2 className="text-xl font-semibold mb-4">Items by Category</h2>
                     {stats?.category_stats && stats.category_stats.length > 0 ? (
-                        <div className="space-y-3">
-                            {stats.category_stats.map((cat: any, idx: number) => (
-                                <div key={idx} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                                        <span>{cat.category}</span>
-                                    </div>
-                                    <span className="font-semibold">{cat.count}</span>
+                        (() => {
+                            const maxCount = Math.max(...stats.category_stats.map((c: any) => c.count));
+                            return (
+                                <div className="space-y-4">
+                                    {stats.category_stats.map((cat: any, idx: number) => {
+                                        const widthPercentage = maxCount > 0 ? (cat.count / maxCount) * 100 : 0;
+                                        return (
+                                            <div key={idx} className="space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                                                        <span>{cat.category}</span>
+                                                    </div>
+                                                    <span className="font-semibold">{cat.count}</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                                    <div 
+                                                        className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                                        style={{ width: `${widthPercentage}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            ))}
-                        </div>
+                            );
+                        })()
                     ) : (
                         <div className="text-center py-8 text-gray-500">
                             <p>No categories yet</p>
