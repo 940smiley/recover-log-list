@@ -1,7 +1,13 @@
 # Test Results - Collectibles Log Book Application
 
-**Test Date**: 2025-11-30  
-**Test Directory**: `I:\C&D PHOTOS\phil`  
+## 2025-12-01
+- ✅ `npm run lint` (frontend) — passes after PWA/Edge UI updates (Baseline mapping dependency warns to update). 【aeee70†L1-L6】【f87bfb†L1-L2】
+- ⚠️ Backend tests not run in this iteration; dependencies for AI stack were not installed in this environment.
+
+---
+
+**Test Date**: 2025-11-30
+**Test Directory**: `I:\C&D PHOTOS\phil`
 **Total Images Processed**: 24 images
 
 ## Test Summary
