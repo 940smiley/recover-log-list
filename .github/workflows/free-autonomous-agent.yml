@@ -111,7 +111,6 @@ STRICT RULES:
 - Do NOT wrap the patch in markdown or code fences.
 - Use correct file paths as shown in the original diff.
 - If no changes are needed, output an empty patch (i.e. output nothing).
-
 EOF
 
           echo "==== Prompt Preview ===="
