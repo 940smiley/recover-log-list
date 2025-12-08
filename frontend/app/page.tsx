@@ -181,7 +181,7 @@ export default function DashboardPage() {
                         <h2 className="text-xl font-semibold text-white mt-1">Items by category</h2>
                         {hasCategories ? (
                             <div className="mt-5 space-y-3">
-                                {stats!.category_stats.map((cat) => (
+                                {stats?.category_stats?.map((cat) => (
                                     <div key={cat.category} className="space-y-1">
                                         <div className="flex justify-between text-sm text-slate-300">
                                             <span>{cat.category}</span>
