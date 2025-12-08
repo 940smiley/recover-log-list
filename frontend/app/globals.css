@@ -17,5 +17,8 @@ body {
 }
 
 * {
+@import url('');
+
+* {
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
