@@ -164,22 +164,22 @@ jobs:
       - name: Create AI prompt
         run: |
           cat << 'EOF' > prompt.txt
-You are an autonomous code assistant running fully offline.
+          You are an autonomous code assistant running fully offline.
 
-You are given a git diff of changes in a pull request.
-Your job:
+          You are given a git diff of changes in a pull request.
+          Your job:
 
-1. Analyze the diff.
-2. Identify bugs, style issues, or improvements.
-3. Output ONLY a unified diff patch that can be applied with `git apply`.
+          1. Analyze the diff.
+          2. Identify bugs, style issues, or improvements.
+          3. Output ONLY a unified diff patch that can be applied with `git apply`.
 
-STRICT RULES:
-- Only output a valid patch starting with lines like: diff --git a/... b/...
-- Do NOT output explanations or commentary.
-- Do NOT wrap the patch in markdown or code fences.
-- Use correct file paths as shown in the original diff.
-- If no changes are needed, output an empty patch (i.e. output nothing).
-EOF
+          STRICT RULES:
+          - Only output a valid patch starting with lines like: diff --git a/... b/...
+          - Do NOT output explanations or commentary.
+          - Do NOT wrap the patch in markdown or code fences.
+          - Use correct file paths as shown in the original diff.
+          - If no changes are needed, output an empty patch (i.e. output nothing).
+          EOF
 
           echo "Prompt created."
 
