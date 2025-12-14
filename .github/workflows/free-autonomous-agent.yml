@@ -15,7 +15,13 @@ permissions:
   pull-requests: write
   issues: write
 
-env:
+jobs:
+  # ======================================================================
+  # JOB: Offline AI dev agent (PR autofix via offline LLM)
+  # ======================================================================
+  ai_dev_agent:
+    runs-on: ubuntu-latest
+    env:
   # ---- Shared knobs for reuse across repos ----
   AI_LABEL_AUTOFIX: ai-autofix
   AI_LABEL_AUTOMERGE: ai-automerge
@@ -39,14 +45,6 @@ env:
 
   # Maven options for Q Code Transformation
   MAVEN_CLI_OPTS: "-B -ntp"
-
-jobs:
-  # ======================================================================
-  # JOB: Offline AI dev agent (PR autofix via offline LLM)
-  # ======================================================================
-  ai_dev_agent:
-    runs-on: ubuntu-latest
-
     # Only run if PR has the autofix label (reusable across repos)
     if: contains(toJson(github.event.pull_request.labels), env.AI_LABEL_AUTOFIX)
 
