@@ -42,7 +42,15 @@ class EdgeEbayPayload(BaseModel):
 
 
 def _download_image(url: str, destination: Path) -> Path:
-    response = requests.get(url, timeout=15)
+def _download_image(url: str, destination: Path) -> Path:
+    # Validate URL to prevent SSRF attacks
+    if not url.startswith(('https://', 'http://')):
+        raise ValueError("Invalid URL scheme")
+    
+    headers = {
+        'User-Agent': 'CollectiblesLog/1.0 (+'
+    }
+    response = requests.get(url, timeout=15, headers=headers, verify=True)
     response.raise_for_status()
 
     destination.parent.mkdir(parents=True, exist_ok=True)
