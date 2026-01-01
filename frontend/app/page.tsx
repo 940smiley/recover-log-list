@@ -147,6 +147,34 @@ export default function DashboardPage() {
                     <p className="text-xs text-slate-500 uppercase tracking-[0.2em]">Distribution</p>
                     <h2 className="text-xl font-semibold text-slate-900 mb-4">Items by category</h2>
                     {stats?.category_stats && stats.category_stats.length > 0 ? (
+                        (() => {
+                            const maxCount = Math.max(...stats.category_stats.map((c: any) => c.count));
+                            return (
+                                <div className="space-y-4">
+{categoryStats.map((cat) => {
+  const widthPercentage = maxCount > 0 ? (cat.count / maxCount) * 100 : 0;
+  return (
+    <div key={cat.category} className="space-y-2">
+      {/* ... rest of component */}
+    </div>
+  );
+})}
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                                                        <span>{cat.category}</span>
+                                                    </div>
+                                                    <span className="font-semibold">{cat.count}</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                                    <div 
+                                                        className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                                        style={{ width: `${widthPercentage}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                         <div className="space-y-3">
                             {stats.category_stats.map((cat: any, idx: number) => (
                                 <div key={idx} className="space-y-1">
@@ -164,8 +192,8 @@ export default function DashboardPage() {
                                         />
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            );
+                        })()
                     ) : (
                         <div className="text-center py-10 text-slate-500">
                             <p>No categories yet</p>
