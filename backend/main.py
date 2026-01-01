@@ -13,7 +13,12 @@ os.makedirs("../data/logs", exist_ok=True)
 # Mount the logs directory to serve images
 app.mount("/images", StaticFiles(directory="../data/logs"), name="images")
 
-origins = ["*"]
+origins = [
+    "",
+    "",
+    # Add production domains as needed
+    # ""
+]
 
 app.add_middleware(
     CORSMiddleware,
