@@ -71,8 +71,18 @@ def _ensure_tags(session: Session, item_id: int, tags: List[str]):
         if not tag:
             tag = Tag(name=normalized)
             session.add(tag)
-            session.commit()
-            session.refresh(tag)
+def _ensure_tags(session: Session, item_id: int, tags: List[str]):
+    for tag_name in tags:
+        normalized = tag_name.strip()
+        if not normalized:
+            continue
+
+        statement = select(Tag).where(Tag.name == normalized)
+        tag = session.exec(statement).first()
+        if not tag:
+            tag = Tag(name=normalized)
+            session.add(tag)
+            # Don't commit here - let caller handle transaction
 
         link_exists = (
             session.exec(
