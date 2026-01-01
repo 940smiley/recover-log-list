@@ -4,7 +4,15 @@
   "version": "1.0.0",
   "description": "Send eBay images into Collectibles Log and trigger training updates.",
   "permissions": ["contextMenus", "storage", "tabs", "activeTab", "scripting"],
-  "host_permissions": ["*://*.ebay.com/*", "*://*.ebay.co.uk/*", "*://*.ebay.*/*", "http://localhost:8000/*"],
+  "host_permissions": [
+    "*://www.ebay.com/*", 
+    "*://www.ebay.co.uk/*", 
+    "*://www.ebay.ca/*",
+    "*://www.ebay.de/*",
+    "*://www.ebay.fr/*",
+    "",
+    ""
+  ],
   "background": {
     "service_worker": "background.js"
   },
