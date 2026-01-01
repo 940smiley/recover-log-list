@@ -1,0 +1,15 @@
+Feature name,Feasibility score,Estimated dev time,Expected impact,Priority rating,Recommended branch name
+Gallery lightbox with keyboard navigation,0.86,2-3 days,Improves browsing speed and keeps users on gallery view,High,codex/gallery-lightbox
+Tag-based search and filters,0.81,2 days,Enables precise discovery across large collections,High,codex/tag-search
+Offline-first PWA mode with cached thumbnails,0.64,4-5 days,Allows viewing items without connectivity,Medium,codex/pwa-offline
+Bulk edit and recategorization tools,0.72,3 days,Reduces manual updates for large imports,Medium,codex/bulk-edit
+CI pipeline with backend pytest + frontend lint,0.9,1 day,Prevents regressions and enforces quality gates,High,codex/ci-pipeline
+AI retraining dashboard with dataset stats,0.55,5-7 days,Improves model quality and transparency,Low,codex/ai-retraining-ui
+Edge extension packaging for Microsoft Store,0.62,2-3 days,Smoother distribution for collectors using Edge,Medium,codex/edge-extension-store
+Feature Name,Feasibility Score,Estimated Dev Time,Expected Impact,Priority Rating,Recommended Branch Name
+Collection timeline with AI highlights,0.78,2-3 days,High user engagement and storytelling,High,codex/collection-timeline-highlights
+Category manager with smart suggestions,0.82,2 days,Improves labeling consistency for training,High,codex/category-manager-smart
+Automated gallery theming (light/dark/aura),0.7,1-2 days,Enhances perceived polish and accessibility,Medium,codex/gallery-dynamic-themes
+Training dataset quality dashboard,0.76,2-3 days,Clarifies model readiness and gaps,High,codex/training-quality-dashboard
+Edge enhancement & glare reducer preview,0.65,3-4 days,Boosts image clarity before import,Medium,codex/image-enhancement-preview
+Offline-ready PWA shell,0.55,4-5 days,Allows capture in low-connectivity environments,Low,codex/pwa-offline-shell

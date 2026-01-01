@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from database import create_db_and_tables
+from routers import files, cloud, ai, items, image, categories, stats, training, integrations
 from routers import files, cloud, ai, items, image, categories, stats, training, settings
 import os
 
@@ -14,8 +15,10 @@ os.makedirs("../data/logs", exist_ok=True)
 app.mount("/images", StaticFiles(directory="../data/logs"), name="images")
 
 origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    "",
+    "",
+    # Add production domains as needed
+    # ""
 ]
 
 app.add_middleware(
@@ -38,6 +41,7 @@ app.include_router(image.router)
 app.include_router(categories.router)
 app.include_router(stats.router)
 app.include_router(training.router)
+app.include_router(integrations.router)
 app.include_router(settings.router)
 
 @app.get("/")

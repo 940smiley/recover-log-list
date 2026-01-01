@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -12,13 +12,7 @@ export default function ItemDetailPage() {
     const [editing, setEditing] = useState(false);
     const [formData, setFormData] = useState({ name: '', description: '' });
 
-    useEffect(() => {
-        if (params.id) {
-            fetchItem();
-        }
-    }, [params.id]);
-
-    const fetchItem = async () => {
+    const fetchItem = useCallback(async () => {
         try {
             const response = await fetch(`http://localhost:8000/items/${params.id}`);
             const data = await response.json();
@@ -29,7 +23,13 @@ export default function ItemDetailPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [params.id]);
+
+    useEffect(() => {
+        if (params.id) {
+            fetchItem();
+        }
+    }, [fetchItem, params.id]);
 
     const handleUpdate = async () => {
         try {
