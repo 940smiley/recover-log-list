@@ -9,6 +9,9 @@ const Header = () => {
                         type="text"
                         placeholder="Quick search"
                         className="bg-transparent outline-none placeholder:text-slate-400 text-slate-700"
+                        value=""
+                        onChange={() => {}}
+                        maxLength={100}
                     />
                 </div>
                 <button className="rounded-full px-3 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-500 shadow-lg shadow-blue-500/20">
