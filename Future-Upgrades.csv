@@ -1,3 +1,13 @@
+Component/Dependency,Possible upgrade versions,Compatibility notes,Estimated complexity,Mitigation strategies,Codex commentary + risk flag
+Frontend - Next.js,17.x LTS once stable,Check for app router API changes and middleware adjustments,Medium,Run `npm run lint` + `next build` in CI and update any deprecated config,[medium] Incremental upgrade recommended after reading Next 17 migration notes
+Frontend - React,20.x when released,Concurrent features may impact older libraries,Medium,Pin React-DOM versions together and validate hydration paths,[medium] Watch for breaking changes in suspense boundaries
+Frontend - Tailwind CSS,Maintain 4.x minor releases or move to 5.x when GA,Tailwind 5 may change config defaults,Medium,Regenerate styles and compare output in Storybook or visual diff,[medium] Keep tailwind.config backups
+Backend - FastAPI,0.115.x latest,Route decorator signatures stable but typing updates may be required,Low,Run backend test suite and adjust pydantic imports if needed,[low] Safe to track minor bumps
+Backend - SQLModel,0.0.22+ (when released),Potential breaking changes in relationships or session management,Medium,Test migrations on a copy of `data/database.db` and pin SQLAlchemy compatibility,[medium] Validate eager-loading paths
+Backend - Ultralytics,>=8.3.x,Model downloads and API params can shift,High,Freeze model weights and review detection outputs before rollout,[high] Upgrade only after verifying accuracy on sample items
+Backend - rembg/opencv/pillow,nlatest security patches,Image pipeline may change outputs,Low,Pin hashes and re-run image processing smoke tests,[low] Apply only security/bugfix releases
+Tooling - ESLint/TypeScript,Late 2025 minor releases,New rules may flag existing code,Medium,Adopt rules gradually and autofix where possible,[low] Keep lint config versioned
+Frontend - PWA caching,Workbox 7 once stable,Ensure service worker scope stays aligned on GitHub Pages,Medium,Staged rollout with cache version bumps and offline smoke tests,[medium] Keep fallback routes minimal
 Component/Dependency,Possible Upgrade Versions,Compatibility Notes,Estimated Complexity,Mitigation Strategies,Codex Commentary + Risk Flag
 Next.js,17 (when stable) | 16.x minors,React 19-ready but verify new app router behaviors and lint rules,Medium,"Pin eslint-config-next to matching major; run lint/build before release",Medium risk - monitor Next.js release notes for app router changes
 React,20 (preview) | 19.x minors,Check concurrent features and new hooks for breaking changes,Medium,"Review third-party packages for React 20 support; enable StrictMode to surface issues",Moderate risk - upgrade after verifying ecosystem readiness

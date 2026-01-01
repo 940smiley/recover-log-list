@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Sidebar from '@/components/Sidebar'
 import Header from '@/components/Header'
+import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -18,7 +19,12 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en">
+            <head>
+                <link rel="manifest" href="/manifest.json" />
+                <meta name="theme-color" content="#2563eb" />
+            </head>
             <body className={inter.className}>
+                <ServiceWorkerRegister />
                 <div className="flex">
                     <Sidebar />
                     <div className="flex-1 flex flex-col">

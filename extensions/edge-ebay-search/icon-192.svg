@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="Edge bridge icon">
+  <defs>
+    <linearGradient id="edgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f2937" />
+      <stop offset="100%" stop-color="#0ea5e9" />
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="172" height="172" rx="32" fill="url(#edgeGrad)" />
+  <path d="M54 70h84v12H54z" fill="#e0f2fe" opacity="0.9" />
+  <rect x="60" y="90" width="72" height="40" rx="12" fill="#c084fc" opacity="0.9" />
+  <circle cx="96" cy="136" r="12" fill="#f8fafc" />
+  <path d="M96 56c12 0 22-10 22-22 0-2.6-.6-5.4-1.6-7.8-5.2 11-13.5 16.2-24.8 16.2-8 0-15.2-3.4-20.4-9.6C73.4 45.4 83 56 96 56Z" fill="#e0f2fe" />
+  <path d="M42 150h108" stroke="#38bdf8" stroke-width="8" stroke-linecap="round" opacity="0.85" />
+</svg>

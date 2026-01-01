@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
 interface BoundingBox {
@@ -66,6 +66,7 @@ export default function DatasetPage() {
         }
     };
 
+    const drawCanvas = useCallback(() => {
     const loadAISuggestions = async () => {
         if (images.length === 0 || currentIndex < 0) return;
         
@@ -177,11 +178,11 @@ export default function DatasetPage() {
             ctx.strokeRect(currentBox.x, currentBox.y, currentBox.width, currentBox.height);
             ctx.setLineDash([]);
         }
-    };
+    }, [annotations, currentBox, currentIndex, images]);
 
     useEffect(() => {
         drawCanvas();
-    }, [currentIndex, annotations, currentBox, images]);
+    }, [drawCanvas]);
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
         if (!currentLabel) {
