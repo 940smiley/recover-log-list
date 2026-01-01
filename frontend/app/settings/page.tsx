@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function SettingsPage() {
@@ -8,7 +8,8 @@ export default function SettingsPage() {
     const [modelSettings, setModelSettings] = useState({
         detection_model: 'yolov8n.pt',
         detection_confidence: 0.25,
-        custom_model_path: ''
+        custom_model_path: '',
+        use_custom_model: false
     });
     const [ebaySettings, setEbaySettings] = useState({
         app_id: '',
@@ -17,15 +18,76 @@ export default function SettingsPage() {
         user_token: '',
         sandbox_mode: true
     });
+    const [availableModels, setAvailableModels] = useState<Array<{ name: string; path: string; size: number }>>([]);
+    const [modelsLoading, setModelsLoading] = useState(false);
+
+    useEffect(() => {
+        loadSettings();
+        loadAvailableModels();
+    }, []);
+
+    const loadAvailableModels = async () => {
+        setModelsLoading(true);
+        try {
+            const response = await fetch('http://localhost:8000/training/models');
+            if (response.ok) {
+                const data = await response.json();
+                setAvailableModels(data);
+            }
+        } catch (error) {
+            console.error('Error loading available models:', error);
+        } finally {
+            setModelsLoading(false);
+        }
+    };
+
+    const loadSettings = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/settings/');
+            const data = await response.json();
+            setModelSettings(data.models);
+            setEbaySettings(data.ebay);
+        } catch (error) {
+            console.error('Error loading settings:', error);
+        }
+    };
 
     const handleSaveModels = async () => {
-        // TODO: Implement save to backend
-        alert('Model settings saved (backend integration pending)');
+        try {
+            const response = await fetch('http://localhost:8000/settings/models', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(modelSettings),
+            });
+            if (response.ok) {
+                alert('Model settings saved successfully!');
+            } else {
+                const error = await response.json();
+                alert(`Error: ${error.detail}`);
+            }
+        } catch (error) {
+            console.error('Error saving model settings:', error);
+            alert('Failed to save model settings');
+        }
     };
 
     const handleSaveEbay = async () => {
-        // TODO: Implement save to backend
-        alert('eBay settings saved (backend integration pending)');
+        try {
+            const response = await fetch('http://localhost:8000/settings/ebay', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(ebaySettings),
+            });
+            if (response.ok) {
+                alert('eBay settings saved successfully!');
+            } else {
+                const error = await response.json();
+                alert(`Error: ${error.detail}`);
+            }
+        } catch (error) {
+            console.error('Error saving eBay settings:', error);
+            alert('Failed to save eBay settings');
+        }
     };
 
     return (
@@ -105,18 +167,58 @@ export default function SettingsPage() {
                                 </p>
                             </div>
 
-                            {modelSettings.detection_model === 'custom' && (
+                            <div className="flex items-center gap-2 mt-2">
+                                <input
+                                    type="checkbox"
+                                    id="use_custom"
+                                    checked={modelSettings.use_custom_model}
+                                    onChange={(e) => setModelSettings({ ...modelSettings, use_custom_model: e.target.checked })}
+                                    className="w-4 h-4"
+                                />
+                                <label htmlFor="use_custom" className="text-sm">
+                                    Use custom model path instead
+                                </label>
+                            </div>
+
+                            {modelSettings.use_custom_model && (
                                 <div>
                                     <label className="block text-sm font-medium mb-2">Custom Model Path</label>
-                                    <input
-                                        type="text"
-                                        value={modelSettings.custom_model_path}
-                                        onChange={(e) => setModelSettings({ ...modelSettings, custom_model_path: e.target.value })}
-                                        placeholder="e.g., ../data/training_runs/custom_run/weights/best.pt"
-                                        className="w-full px-4 py-2 border rounded"
-                                    />
+                                    <div className="space-y-3">
+                                        {availableModels.length > 0 ? (
+                                            <div>
+                                                <p className="text-sm font-medium mb-2">Available trained models:</p>
+                                                <select
+                                                    value={modelSettings.custom_model_path || ''}
+                                                    onChange={(e) => setModelSettings({ ...modelSettings, custom_model_path: e.target.value })}
+                                                    className="w-full px-4 py-2 border rounded"
+                                                >
+                                                    <option value="">Select a trained model...</option>
+                                                    {availableModels.map((model) => (
+                                                        <option key={model.path} value={model.path}>
+                                                            {model.name} ({Math.round(model.size / 1024 / 1024)} MB)
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        ) : modelsLoading ? (
+                                            <p className="text-sm text-gray-500">Loading available models...</p>
+                                        ) : (
+                                            <p className="text-sm text-gray-500">No trained models found. Train a model first or enter a custom path.</p>
+                                        )}
+                                        
+                                        <div>
+                                            <p className="text-sm font-medium mb-1">Or enter custom path:</p>
+                                            <input
+                                                type="text"
+                                                value={modelSettings.custom_model_path || ''}
+                                                onChange={(e) => setModelSettings({ ...modelSettings, custom_model_path: e.target.value })}
+                                                placeholder="e.g., ../data/training_runs/custom_run/weights/best.pt"
+                                                className="w-full px-4 py-2 border rounded"
+                                            />
+                                        </div>
+                                    </div>
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Path to your custom trained model file (.pt)
+                                        Path to your custom trained model file (.pt) or API endpoint
                                     </p>
                                 </div>
                             )}

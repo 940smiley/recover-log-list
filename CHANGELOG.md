@@ -24,3 +24,6 @@
 
 ### Testing & Release
 - Linting to validate frontend changes; tagged this release as the initial semantic version.
+## Release Evaluation
+- No semantic version tags found in repository history; release not generated.
+- Pending criteria: stabilized CI pipeline and tagged baseline (v0.1.0+).

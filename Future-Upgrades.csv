@@ -8,3 +8,10 @@ Backend - Ultralytics,>=8.3.x,Model downloads and API params can shift,High,Free
 Backend - rembg/opencv/pillow,nlatest security patches,Image pipeline may change outputs,Low,Pin hashes and re-run image processing smoke tests,[low] Apply only security/bugfix releases
 Tooling - ESLint/TypeScript,Late 2025 minor releases,New rules may flag existing code,Medium,Adopt rules gradually and autofix where possible,[low] Keep lint config versioned
 Frontend - PWA caching,Workbox 7 once stable,Ensure service worker scope stays aligned on GitHub Pages,Medium,Staged rollout with cache version bumps and offline smoke tests,[medium] Keep fallback routes minimal
+Component/Dependency,Possible Upgrade Versions,Compatibility Notes,Estimated Complexity,Mitigation Strategies,Codex Commentary + Risk Flag
+Next.js,17 (when stable) | 16.x minors,React 19-ready but verify new app router behaviors and lint rules,Medium,"Pin eslint-config-next to matching major; run lint/build before release",Medium risk - monitor Next.js release notes for app router changes
+React,20 (preview) | 19.x minors,Check concurrent features and new hooks for breaking changes,Medium,"Review third-party packages for React 20 support; enable StrictMode to surface issues",Moderate risk - upgrade after verifying ecosystem readiness
+FastAPI,0.115.x,Likely non-breaking but check dependency pins (Starlette/Pydantic),Low,"Run backend test suite; confirm OpenAPI schema stability",Low risk - apply during routine maintenance
+Uvicorn,0.32.x -> 0.34.x,Could change logging/ASGI behaviors,Low,"Validate startup/shutdown hooks; smoke-test WebSocket endpoints if any",Low risk - safe with quick regression check
+Ultralytics,8.x latest,Model API surface can shift; verify YOLO export/runtime,High,"Freeze working model versions; run inference regression on sample images",High risk - upgrade only when needed for model quality
+TailwindCSS,4.x minors or 5 (when released),New class name changes and build tooling adjustments,Medium,"Regenerate CSS with new CLI; audit custom styles for deprecations",Moderate risk - plan for design QA

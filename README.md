@@ -40,6 +40,37 @@ A comprehensive web application for managing collectibles with AI-powered image 
 - **AI/ML**: YOLOv8 (object detection), Rembg (background removal)
 - **Cloud**: Rclone (multi-cloud support)
 
+## 🔍 Dependency Map (Auto-generated)
+
+- **Backend**: FastAPI, SQLModel, Uvicorn, Ultralytics (YOLOv8), OpenCV, Pillow, Rembg, NumPy, Requests
+- **Frontend**: Next.js 16, React 19, TailwindCSS 4, TypeScript 5, ESLint
+- **Tooling**: PostCSS, Autoprefixer, Type definitions for React/Node
+
+## 🧭 Feature Overview & Component Summary
+
+- **Dashboard (frontend/app/page.tsx)**: Presents stats, recent items, and quick actions with serene gradients.
+- **Layout (frontend/app/layout.tsx)**: Global shell with Sidebar/Header chrome and gradient-backed canvas.
+- **Navigation (frontend/components/Sidebar.tsx & Header.tsx)**: Modernized sidebar with active states and a glassy top bar.
+- **Backend Services**: FastAPI routers coordinate AI detection (backend/routers/ai.py), item import (backend/routers/items.py), and training (backend/routers/training.py) using services in backend/services/ai.py and backend/services/training.py.
+
+## ⚡ Setup Quickstart (Auto-detected)
+
+1. **Backend**
+   ```bash
+   cd backend
+   python -m venv .venv
+   source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+   pip install -r requirements.txt
+   uvicorn main:app --reload --port 8000
+   ```
+2. **Frontend**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+3. Visit `http://localhost:3000` with the backend available at `http://localhost:8000`.
+
 ## 📦 Installation
 
 ### Prerequisites
@@ -165,6 +196,20 @@ This is a personal project for managing collectibles. Feel free to fork and cust
 - Run backend and frontend tests or linters before opening a PR and record results in `TEST_RESULTS.md`.
 - Keep API and UI changes documented in `CHANGELOG.md` and update the README if setup steps change.
 - Prefer incremental, focused PRs with clear descriptions of user-facing improvements.
+## 🧭 Contribution Guidelines
+
+- Use feature branches and include concise summaries in pull requests.
+- Run `npm run lint` for frontend changes and relevant backend checks before submitting.
+- Keep UI updates consistent with the modern, serene Swan-inspired aesthetic.
+- Add documentation updates alongside feature work when behavior changes.
+
+## 🌐 GitHub Pages
+
+Pages hosting is not currently enabled. Recommend publishing documentation from the `main` branch (or `/docs` folder if created) using GitHub Pages for quick previews.
+
+---
+
+*Last enhanced by Codex on 2025-12-06 15:18 UTC.*
 
 ## 📄 License
 
