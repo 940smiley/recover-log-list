@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from database import create_db_and_tables
+from routers import files, cloud, ai, items, image, categories, stats, training, integrations
 from routers import files, cloud, ai, items, image, categories, stats, training, settings
 import os
 import logging
@@ -68,6 +69,10 @@ origins = [
     "http://127.0.0.1:3000",
     "http://localhost:3001",  # Alternative port
     "http://127.0.0.1:3001",
+    "",
+    "",
+    # Add production domains as needed
+    # ""
 ]
 
 # Add environment variable support for additional origins
@@ -91,6 +96,7 @@ app.include_router(image.router)
 app.include_router(categories.router)
 app.include_router(stats.router)
 app.include_router(training.router)
+app.include_router(integrations.router)
 app.include_router(settings.router)
 
 @app.get("/")

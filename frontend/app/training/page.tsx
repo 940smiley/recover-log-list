@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 
 export default function TrainingPage() {
@@ -15,19 +15,7 @@ export default function TrainingPage() {
     const [logs, setLogs] = useState<string[]>([]);
     const logsEndRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        fetchStatus();
-        fetchModels();
-        const interval = setInterval(fetchStatus, 2000); // Poll status every 2s
-        return () => clearInterval(interval);
-    }, []);
-
-    useEffect(() => {
-        // Scroll logs to bottom
-        logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [logs]);
-
-    const fetchStatus = async () => {
+    const fetchStatus = useCallback(async () => {
         try {
             const response = await fetch('http://localhost:8000/training/status');
             const data = await response.json();
@@ -38,9 +26,9 @@ export default function TrainingPage() {
         } catch (error) {
             console.error('Error fetching status:', error);
         }
-    };
+    }, []);
 
-    const fetchModels = async () => {
+    const fetchModels = useCallback(async () => {
         try {
             const response = await fetch('http://localhost:8000/training/models');
             const data = await response.json();
@@ -48,7 +36,19 @@ export default function TrainingPage() {
         } catch (error) {
             console.error('Error fetching models:', error);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchStatus();
+        fetchModels();
+        const interval = setInterval(fetchStatus, 2000); // Poll status every 2s
+        return () => clearInterval(interval);
+    }, [fetchModels, fetchStatus]);
+
+    useEffect(() => {
+        // Scroll logs to bottom
+        logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [logs]);
 
     const handleStart = async () => {
         try {

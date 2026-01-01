@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collectibles Edge Bridge</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 16px; max-width: 520px; }
+    label { display: block; margin-top: 12px; font-weight: 600; }
+    input[type="text"], input[type="number"] { width: 100%; padding: 8px; margin-top: 4px; }
+    .row { display: flex; gap: 8px; align-items: center; }
+  </style>
+</head>
+<body>
+  <h1>Collectibles Log Edge bridge</h1>
+  <p>Configure where to send eBay images and which item to update.</p>
+
+  <label>API base URL</label>
+  <input id="apiBase" type="text" placeholder="http://localhost:8000" />
+
+  <label>Target item ID</label>
+  <input id="itemId" type="number" min="1" placeholder="123" />
+
+  <div class="row">
+    <input id="addToTraining" type="checkbox" />
+    <label for="addToTraining">Add images to training ingest</label>
+  </div>
+
+  <div class="row">
+    <input id="triggerTraining" type="checkbox" />
+    <label for="triggerTraining">Trigger training after ingest (requires data path)</label>
+  </div>
+
+  <label>Training data.yaml path (optional)</label>
+  <input id="trainingDataPath" type="text" placeholder="../data/training/data.yaml" />
+
+  <button id="save">Save</button>
+
+  <p id="status" aria-live="polite"></p>
+
+  <script src="options.js"></script>
+</body>
+</html>
