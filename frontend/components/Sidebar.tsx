@@ -31,9 +31,10 @@ const Sidebar = () => {
                             <li key={item.href}>
                                 <Link
                                     href={item.href}
-                                    className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 border border-transparent hover:border-white/10 hover:bg-white/5 ${
-                                        isActive ? 'bg-white/10 border-white/10 shadow-lg shadow-blue-500/10' : ''
-                                    }`}
+                                    className={[
+                                        "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 border border-transparent hover:border-white/10 hover:bg-white/5",
+                                        isActive ? "bg-white/10 border-white/10 shadow-lg shadow-blue-500/10" : ""
+                                    ].filter(Boolean).join(" ")}
                                 >
                                     <span className="text-lg">{item.icon}</span>
                                     <span className="font-medium tracking-tight">{item.label}</span>
