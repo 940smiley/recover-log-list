@@ -80,8 +80,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install pip-audit -r backend/requirements.txt
-      - run: pip-audit
+      - run: pip install pip-audit
+      - run: pip-audit -r backend/requirements.txt
 ```
 
 ### Artifact Build (Optional)
