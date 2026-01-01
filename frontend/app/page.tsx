@@ -92,7 +92,7 @@ export default function DashboardPage() {
                         key={card.label}
                         className="relative overflow-hidden rounded-2xl border border-white/50 bg-white/70 p-5 shadow-md shadow-slate-900/5"
                     >
-                        <div className={`absolute inset-0 bg-gradient-to-br ${card.accent} opacity-10`} />
+                        <div className={`absolute inset-0 bg-gradient-to-br opacity-10 ${card.accent.startsWith('from-') ? card.accent : 'from-blue-500 to-indigo-500'}`} />
                         <div className="relative">
                             <p className="text-sm text-slate-500">{card.label}</p>
                             <p className="mt-2 text-3xl font-semibold text-slate-900">{card.value}</p>
