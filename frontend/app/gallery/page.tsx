@@ -26,15 +26,23 @@ export default function GalleryPage() {
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
         const saved = window.localStorage.getItem('gallery_preferences');
         if (saved) {
-            const parsed = JSON.parse(saved);
-            setColumns(parsed.columns ?? 3);
-            setViewDensity(parsed.viewDensity ?? 'compact');
-            setAutoOptimize(parsed.autoOptimize ?? true);
-            setImageFit(parsed.imageFit ?? 'cover');
-            setShowMetadata(parsed.showMetadata ?? true);
-            setProfile(parsed.profile ?? 'balanced');
+            try {
+                const parsed = JSON.parse(saved);
+                setColumns(parsed.columns ?? 3);
+                setViewDensity(parsed.viewDensity ?? 'compact');
+                setAutoOptimize(parsed.autoOptimize ?? true);
+                setImageFit(parsed.imageFit ?? 'cover');
+                setShowMetadata(parsed.showMetadata ?? true);
+                setProfile(parsed.profile ?? 'balanced');
+            } catch (error) {
+                console.warn('Failed to parse gallery preferences:', error);
+                // Clear invalid data
+                window.localStorage.removeItem('gallery_preferences');
+            }
         }
     }, []);
 
