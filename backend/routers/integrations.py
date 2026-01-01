@@ -125,7 +125,7 @@ def link_ebay_listing(payload: EdgeEbayPayload):
                     is_primary=False if item.images else True,
                 )
                 session.add(added_image)
-            except Exception as exc:  # noqa: BLE001
+            except requests.exceptions.RequestException as exc:
                 raise HTTPException(status_code=502, detail=f"Failed to fetch image: {exc}")
 
         tag_values = payload.tags + [spec.key for spec in payload.specs if spec.key]
