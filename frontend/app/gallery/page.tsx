@@ -63,7 +63,11 @@ export default function GalleryPage() {
         if (!autoOptimize || typeof window === 'undefined') return;
         const width = window.innerWidth;
         // Use deviceMemory if available to bias density for higher-end devices
-        const memory = (navigator as any).deviceMemory || 4;
+        // Use deviceMemory if available to bias density for higher-end devices
+        const memory = (navigator as any).deviceMemory ?? 4;
+        if (typeof memory !== 'number' || memory < 0) {
+            memory = 4; // fallback for invalid values
+        }
         const performanceBonus = memory >= 12 ? 1 : memory >= 8 ? 0 : -1;
 
         const calculatedColumns = Math.max(
