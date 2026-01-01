@@ -96,10 +96,14 @@ export default function DashboardPage() {
                             const maxCount = Math.max(...stats.category_stats.map((c: any) => c.count));
                             return (
                                 <div className="space-y-4">
-                                    {stats.category_stats.map((cat: any, idx: number) => {
-                                        const widthPercentage = maxCount > 0 ? (cat.count / maxCount) * 100 : 0;
-                                        return (
-                                            <div key={idx} className="space-y-2">
+{categoryStats.map((cat) => {
+  const widthPercentage = maxCount > 0 ? (cat.count / maxCount) * 100 : 0;
+  return (
+    <div key={cat.category} className="space-y-2">
+      {/* ... rest of component */}
+    </div>
+  );
+})}
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
                                                         <div className="w-3 h-3 bg-blue-500 rounded"></div>
