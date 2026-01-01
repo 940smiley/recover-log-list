@@ -14,7 +14,10 @@ const Header = () => {
                         maxLength={100}
                     />
                 </div>
-                <button className="rounded-full px-3 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-500 shadow-lg shadow-blue-500/20">
+                <button 
+                    className="rounded-full px-3 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-500 shadow-lg shadow-blue-500/20"
+                    onClick={() => window.location.href = '/import'}
+                >
                     New entry
                 </button>
                 <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full border border-white shadow-inner" />
